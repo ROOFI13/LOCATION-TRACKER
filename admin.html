@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <h2>Admin Dashboard (Protected)</h2>
+    <div id="loginBox">
+        <p>Masukkan password admin:</p>
+        <input type="password" id="adminPass">
+        <button onclick="checkPass()">Login</button>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+        <h3>Live Location Viewer</h3>
+        <div id="map" style="height:80vh;width:100%;"></div>
+    </div>
+
+<script>
+const correctPassword = "admin123";
+
+function checkPass(){
+    const input = document.getElementById("adminPass").value;
+    if(input === correctPassword){
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        initAdminMap();
+    } else {
+        alert("Password salah!");
+    }
+}
+
+let map;
+let marker;
+
+function initAdminMap(){
+    map = L.map('map').setView([0,0],2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom: 19,
+    }).addTo(map);
+
+    setInterval(fetchLocation,2000);
+}
+
+function fetchLocation(){
+    fetch("location.json?cache="+Math.random())
+    .then(res=>res.json())
+    .then(data=>{
+        if(!marker){
+            marker = L.marker([data.lat,data.lon]).addTo(map);
+        } else {
+            marker.setLatLng([data.lat,data.lon]);
+        }
+        map.setView([data.lat,data.lon],16);
+    })
+    .catch(err=>{});
+}
+</script>
+
+</body>
+</html>
